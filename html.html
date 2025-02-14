@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicken Gun Кликер</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .message { color: red; font-size: 18px; display: none; }
+        .shop, .bosses { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Chicken Gun Кликер</h1>
+    <h2>Монеты: <span id="coins">0</span></h2>
+    <h2>Жизни: <span id="health">100</span></h2>
+    <button id="clickButton">Клюнуть!</button>
+    <p class="message" id="cheatMessage">Не играй с читами!</p>
+    
+    <div class="shop">
+        <h2>Магазин</h2>
+        <button onclick="buyCharacter(1000, 'Баба Зина')">Баба Зина (1000 монет)</button>
+        <button onclick="buyCharacter(9000, 'Ульта')">Ульта (9000 монет)</button>
+        <button onclick="buyCharacter(15000, 'А4')">А4 (15000 монет)</button>
+        <button onclick="buyCharacter(50000, 'Ульта супер бомба')">Ульта супер бомба (50000 монет)</button>
+        <h3>Прокачка жизней</h3>
+        <button onclick="upgradeHealth(500, 50)">+50 жизней (500 монет)</button>
+        <button onclick="upgradeHealth(2000, 200)">+200 жизней (2000 монет)</button>
+    </div>
+
+    <div class="bosses">
+        <h2>Боссы</h2>
+        <button onclick="fightBoss(9000, 9000, 'Вкусная курочка')">Вкусная курочка (9000 HP, 9000 монет)</button>
+        <button onclick="fightBoss(10000, 10000, 'Амогус')">Амогус (10000 HP, 10000 монет)</button>
+        <button onclick="fightBoss(50000, 50000, 'Мамонт')">Мамонт (50000 HP, 50000 монет)</button>
+    </div>
+    
+    <button onclick="resetGame()">СБРОСИТЬ ПРОГРЕСС</button>
+
+    <script>
+        let coins = parseInt(localStorage.getItem("coins")) || 0;
+        let health = parseInt(localStorage.getItem("health")) || 100;
+        let lastClickTime = 0;
+        const clickButton = document.getElementById("clickButton");
+        const coinsDisplay = document.getElementById("coins");
+        const healthDisplay = document.getElementById("health");
+        const cheatMessage = document.getElementById("cheatMessage");
+
+        coinsDisplay.textContent = coins;
+        healthDisplay.textContent = health;
+
+        function saveGame() {
+            localStorage.setItem("coins", coins);
+            localStorage.setItem("health", health);
+        }
+
+        function resetGame() {
+            localStorage.clear();
+            coins = 0;
+            health = 100;
+            coinsDisplay.textContent = coins;
+            healthDisplay.textContent = health;
+            alert("Прогресс сброшен!");
+        }
+
+        clickButton.addEventListener("click", function() {
+            let currentTime = Date.now();
+            if (currentTime - lastClickTime < 100) {
+                cheatMessage.style.display = "block";
+                return;
+            }
+            lastClickTime = currentTime;
+            coins++;
+            coinsDisplay.textContent = coins;
+            saveGame();
+        });
+
+        function buyCharacter(price, name) {
+            if (coins >= price) {
+                coins -= price;
+                coinsDisplay.textContent = coins;
+                alert(`Ты купил ${name}!`);
+                saveGame();
+            } else {
+                alert("Недостаточно монет!");
+            }
+        }
+
+        function fightBoss(hp, reward, name) {
+            if (health >= hp) {
+                coins += reward;
+                coinsDisplay.textContent = coins;
+                alert(`Ты победил ${name} и получил ${reward} монет!`);
+                saveGame();
+            } else {
+                alert("Слишком мало жизней для битвы!");
+            }
+        }
+
+        function upgradeHealth(price, amount) {
+            if (coins >= price) {
+                coins -= price;
+                health += amount;
+                coinsDisplay.textContent = coins;
+                healthDisplay.textContent = health;
+                alert(`Ты прокачал жизни на ${amount}!`);
+                saveGame();
+            } else {
+                alert("Недостаточно монет!");
+            }
+        }
+    </script>
+</body>
+</html>
