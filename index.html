@@ -5,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chicken Gun Кликер</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; }
+        body { text-align: center; font-family: Arial, sans-serif; background-color: #0f172a; color: #ffffff; }
         .message { color: red; font-size: 18px; display: none; }
-        .shop, .bosses { margin-top: 20px; }
+        .shop, .bosses, .settings { margin-top: 20px; }
+        .hidden { display: none; }
+        .dark-theme { background-color: #1e293b; color: white; }
+        .classic-ui { background-color: #f0f0f0; color: black; }
+        button { background-color: #2563eb; color: white; border: none; padding: 10px 15px; margin: 5px; cursor: pointer; border-radius: 5px; }
+        button:hover { background-color: #1d4ed8; }
     </style>
 </head>
 <body>
@@ -24,62 +29,76 @@
         <button onclick="buyCharacter(15000, 'А4')">А4 (15000 монет)</button>
         <button onclick="buyCharacter(50000, 'Ульта супер бомба')">Ульта супер бомба (50000 монет)</button>
         <h3>Прокачка жизней</h3>
-        <button onclick="upgradeHealth(500, 50)">+50 жизней (500 монет)</button>
-        <button onclick="upgradeHealth(2000, 200)">+200 жизней (2000 монет)</button>
+        <button onclick="upgradeHealth(125, 50)">+50 жизней (125 монет)</button>
+        <button onclick="upgradeHealth(500, 200)">+200 жизней (500 монет)</button>
     </div>
 
     <div class="bosses">
         <h2>Боссы</h2>
+        <button onclick="fightBoss(500, 500, 'Маленький цыплёнок')">Маленький цыплёнок (500 HP, 500 монет)</button>
+        <button onclick="fightBoss(1000, 1000, 'Сердитый петух')">Сердитый петух (1000 HP, 1000 монет)</button>
         <button onclick="fightBoss(9000, 9000, 'Вкусная курочка')">Вкусная курочка (9000 HP, 9000 монет)</button>
         <button onclick="fightBoss(10000, 10000, 'Амогус')">Амогус (10000 HP, 10000 монет)</button>
         <button onclick="fightBoss(50000, 50000, 'Мамонт')">Мамонт (50000 HP, 50000 монет)</button>
     </div>
     
-    <button onclick="resetGame()">СБРОСИТЬ ПРОГРЕСС</button>
-
+    <button onclick="confirmResetGame()">СБРОСИТЬ ПРОГРЕСС</button>
+    
     <script>
         let coins = parseInt(localStorage.getItem("coins")) || 0;
         let health = parseInt(localStorage.getItem("health")) || 100;
         let lastClickTime = 0;
-        const clickButton = document.getElementById("clickButton");
-        const coinsDisplay = document.getElementById("coins");
-        const healthDisplay = document.getElementById("health");
-        const cheatMessage = document.getElementById("cheatMessage");
-
-        coinsDisplay.textContent = coins;
-        healthDisplay.textContent = health;
+        document.getElementById("coins").textContent = coins;
+        document.getElementById("health").textContent = health;
 
         function saveGame() {
             localStorage.setItem("coins", coins);
             localStorage.setItem("health", health);
         }
 
+        function confirmResetGame() {
+            let confirmation = confirm("Вы уверены, что хотите сбросить прогресс?");
+            if (confirmation) {
+                resetGame();
+            }
+        }
+
         function resetGame() {
             localStorage.clear();
             coins = 0;
             health = 100;
-            coinsDisplay.textContent = coins;
-            healthDisplay.textContent = health;
+            document.getElementById("coins").textContent = coins;
+            document.getElementById("health").textContent = health;
             alert("Прогресс сброшен!");
         }
 
-        clickButton.addEventListener("click", function() {
+        document.getElementById("clickButton").addEventListener("click", function() {
             let currentTime = Date.now();
             if (currentTime - lastClickTime < 100) {
-                cheatMessage.style.display = "block";
+                document.getElementById("cheatMessage").style.display = "block";
                 return;
             }
             lastClickTime = currentTime;
             coins++;
-            coinsDisplay.textContent = coins;
+            document.getElementById("coins").textContent = coins;
             saveGame();
         });
 
-        function buyCharacter(price, name) {
-            if (coins >= price) {
-                coins -= price;
-                coinsDisplay.textContent = coins;
-                alert(`Ты купил ${name}!`);
+        function buyCharacter(cost, name) {
+            if (coins >= cost) {
+                coins -= cost;
+                alert(`Вы купили ${name}!`);
+                saveGame();
+            } else {
+                alert("Недостаточно монет!");
+            }
+        }
+
+        function upgradeHealth(cost, amount) {
+            if (coins >= cost) {
+                coins -= cost;
+                health += amount;
+                document.getElementById("health").textContent = health;
                 saveGame();
             } else {
                 alert("Недостаточно монет!");
@@ -87,26 +106,22 @@
         }
 
         function fightBoss(hp, reward, name) {
-            if (health >= hp) {
-                coins += reward;
-                coinsDisplay.textContent = coins;
-                alert(`Ты победил ${name} и получил ${reward} монет!`);
-                saveGame();
+            if (health > 0) {
+                let fight = confirm(`Вы уверены, что хотите сразиться с ${name}?`);
+                if (fight) {
+                    if (health >= hp) {
+                        health -= hp;
+                        coins += reward;
+                        alert(`Вы победили ${name} и получили ${reward} монет!`);
+                    } else {
+                        alert("Вы проиграли, недостаточно жизней!");
+                    }
+                    document.getElementById("coins").textContent = coins;
+                    document.getElementById("health").textContent = health;
+                    saveGame();
+                }
             } else {
-                alert("Слишком мало жизней для битвы!");
-            }
-        }
-
-        function upgradeHealth(price, amount) {
-            if (coins >= price) {
-                coins -= price;
-                health += amount;
-                coinsDisplay.textContent = coins;
-                healthDisplay.textContent = health;
-                alert(`Ты прокачал жизни на ${amount}!`);
-                saveGame();
-            } else {
-                alert("Недостаточно монет!");
+                alert("У вас нет жизней для сражения!");
             }
         }
     </script>
